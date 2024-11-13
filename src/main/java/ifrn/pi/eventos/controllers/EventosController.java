@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
+import ifrn.pi.eventos.models.Convidado;
 import ifrn.pi.eventos.models.Evento;
 import ifrn.pi.eventos.repositories.EventoReporitory;
 
@@ -53,6 +54,10 @@ public class EventosController {
 		Evento evento = opt.get();
 		md.addObject("evento", evento);
 		return md;
+	}
+	
+	public String salvarConvidado(@PathVariable long id, Convidado convidado) {
+		return ""; 
 	}
 	
 }
