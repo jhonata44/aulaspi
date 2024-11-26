@@ -26,15 +26,15 @@ public class EventosController {
 	private ConvidadoRepository cr;
 	
 	@GetMapping("/form")
-	public String form() {
+	public String form(Evento evento) {
 		return "eventos/formEventos";
 	}
 	@PostMapping
-	public String adicionar(Evento evento) {
+	public String salvar(Evento evento) {
 		
 		System.out.println(evento );
 		er.save(evento);
-		return "eventos/evento-adicionar";
+		return "eventos/evento-adicionado";
 	}
 	@GetMapping
 	public ModelAndView listar() {
@@ -76,13 +76,61 @@ public class EventosController {
         cr.save(convidado);
         
 		return "redirect:/eventos/{idEvento}"; 
+		
 	}
+	@GetMapping("/{id}/selecionar")
+	public ModelAndView selecionarEvento(@PathVariable Long id) {
+		
+		ModelAndView md = new ModelAndView();
+		Optional<Evento> opt = er.findById(id);
+		if(opt.isEmpty()) {
+			md.setViewName("redirect:/eventos");
+			return md;
+		}
+		
+		Evento evento = opt.get();
+		md.setViewName("eventos/formEventos");
+		md.addObject("evento", evento);
+		return md;
+	}
+	@GetMapping("/{id}/selecionar/{idConvidado}/selecionar")
+	public ModelAndView selecionarConvidado(@PathVariable Long idEvento, @PathVariable long idConvidado) {
+		ModelAndView md = new ModelAndView();
+		
+		Optional<Evento> optEvento = er.findById(idEvento); 
+		Optional<Convidado> optConvidado = cr.findById(idConvidado);
+		
+		if(optEvento.isEmpty() || optConvidado.isEmpty()) {
+			md.setViewName("redirect:/eventos");
+			return md;
+		}
+		Evento evento = optEvento.get();
+		Convidado convidado = optConvidado.get();
+		
+		if(evento.getId() == convidado.getEvento().getId()){
+		md.setViewName("rederect:/eventos");
+		return md;
+		
+		}
+		
+		md.setViewName("eventos/detalhes");
+		md.addObject("convidado", convidado);
+		md.addObject("evento", evento);
+		md.addObject("convidados", cr.findByEvento(evento));
+		return md;
+	}
+	
 	@GetMapping("/{id}/remover")
 	public String apagarEvento(@PathVariable long id) {
 		Optional<Evento> opt = er.findById(id);
 		
 		if(!opt.isEmpty()) {
 			Evento evento = opt.get();
+			
+			List<Convidado> convidados = cr.findByEvento(evento);
+			
+			cr.deleteAll(convidados);
+			
 			er.delete(evento);
 		}
 		return "redirect:/eventos";
